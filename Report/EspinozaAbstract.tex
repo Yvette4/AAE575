@@ -1,0 +1,43 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+%\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+%\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+%		T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\usepackage{biblatex} 
+\addbibresource{refs.bib}
+
+\begin{document}
+	
+	\title{Analysis on Debris Detection and Trajectory Predictions*}
+	\author{\IEEEauthorblockN{1\textsuperscript{st} Yvette Espinoza}
+		\IEEEauthorblockA{\textit{Software Engineer} \\
+			\textit{Northrop Grumman}\\
+			Redondo Beach, CA, USA \\
+			yespinoz@purdue.edu}
+	}
+	\maketitle
+	
+	\begin{abstract}
+		  
+		Technological improvements over the past few decades have made space exploration more feasible, but the increase in space activity has also resulted in undesirable space debris that can pose a threat to the safety of space crafts. Large debris can be detected and its orbit tracked to provide space situational awareness that reduces the risk of equipment colliding with the debris. There are many ways to detect the debris, such as with radar or optical systems, but the main challenge lies in accurately tracking and predicting the trajectory. Recent studies have focused on collecting previous ground data and using machine learning to predict the trajectory, but there have also been studies that track debris from small satellite constellations. \
+		
+		This research project will first look at the hardware requirements for different detection and tracking methods, comparing ground based systems and small satellite constellations. A discussion will follow on which hardware system is more appropriate given some requirements, such as cost effectiveness or a specific mission. The different data processing methods to track the debris will also be analyzed. Lastly, applications using the debris trajectories will be discussed, such as orbit maneuvering to prevent a collision.\cite{2013_orbit_pred}
+
+	\end{abstract}
+
+	\section{Introduction}
+	
+	YVETTE - intro goes here, random citation \cite{2019_lidar}.
+
+
+	\nocite{*}
+	\printbibliography
+	
+\end{document}
