@@ -10,7 +10,6 @@
 %\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
 %		T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
-
 \usepackage{biblatex} 
 \addbibresource{refs.bib}
 
@@ -27,6 +26,10 @@
 
 	\maketitle
 	
+% ------------------------------------------------------------------------------------------------------------
+% ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ 
+% ------------------------------------------------------------------------------------------------------------
+	
 	\begin{abstract}
 		
 		Technological improvements over the past few decades have made space exploration more feasible, but the increase in space activity has also resulted in undesirable space debris that can pose a threat to the safety of space crafts. 
@@ -38,8 +41,12 @@
 
 	\end{abstract}
 
+% ------------------------------------------------------------------------------------------------------------
+% ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ 
+% ------------------------------------------------------------------------------------------------------------
+
 	\section{Literature Review}
-	
+
 		Space exploration, first started in the late 1950's with the USSR's launch of Sputnik I, has become a vital part in current technologies.
 		Civilians and government alike have come to rely on space systems, such as GNSS or weather satellites, but the addition of new satellites in an already crowded area is increasing the risk of collisions. 
 		This idea was first introduced in 1978 by Kessler, who explained the high density of objects in low Earth orbit (LEO) increases the risk of collisions, and collisions themselves would create more debris that would further increase the collision risk, a scenario commonly referred to as the Kessler Syndrome.
@@ -49,7 +56,7 @@
 		They rely on both ground based radars and optical telescopes to track the position of the object over time, information that is needed to determine and predict orbits.
 		However, applications such as debris collision warning, or active debris removal require information on smaller debris, along with a higher accuracy in orbit determination and prediction, both of which SSN's struggle to provide \cite{2020_ml_approach}.
 		
-	
+
 	\subsection{Small Satellite Constellations}
 		In an effort to increase the accuracy of space debris orbit detection and predictions, studies were conducted to validate the concept of space based space surveillance. In 1996 the Midcourse Space Experiment satellite was launched with a Space-Based Visible (SBV) sensor, becoming the first demonstration of space-based surveillance that could be valuable to the SSN as an addition to the ground based systems \cite{stokes2000space}. In the following years more satellites, such as the SBSS Block 10 and the Sapphire, have been deployed and shown to provide a more accurate description of the environment  \cite{multi_spacecraft_2016}. 
 		Onboard sensors have an unobstructed view of debris, not affected by the weather as optical systems are, and can provide more accurate measurements when processing occurs onboard the spacecraft instead of relying on ground control centers.
@@ -61,9 +68,9 @@
 		One method for onboard pose determination and tracking of space debris involves using a model-based algorithm that processes 3-D point clouds collected from a LIDAR sensor \cite{2017_pose_pca}\cite{liu2016point}\cite{unscented_kalman}.
 		The first step is to obtain an initial pose, then refine the pose measurement as part of the tracking and orbit estimation. 
 		For the initial pose $p_0 = (\alpha_0, \beta_0, \gamma_0, T_0)$, \cite{2017_pose_pca} proposed a three step method to estimate the relative position vector directly from the measured point cloud, referred to as 3-D PCA-based online Template Matching.
-		
+
 		First, the initial position vector ($T_0$) of the satellite with respect to the target, or debris to track, is computed as the centroid of the point cloud. Then the main axes ($e_m$) are estimated using the Principle Component Analysis, where the directions are given by the eigenvectors of the data's covariance matrix ($Q$). The main axes equations are shown in (\ref{eqn:estimated_axes}), while the roll ($\alpha_0$) and pitch ($\beta_0$) estimates are in (\ref{eqn:estimated_roll_pitch}).
-		
+
 		\begin{figure}[htbp]
 			\centerline{\includegraphics{Images/3_D_PCA_based_TM_algorithm.PNG}}
 			\caption{3-D PCA-based online TM algorithm.}
@@ -94,17 +101,91 @@
 		
 		An overview of the model from acquisition of the point cloud data to the inital pose estimation, taken from \cite{2017_pose_pca} is shown in Figure \ref{3_D_PCA_based_TM_algorithm}.
 
+% ------------------------------------------------------------------------------------------------------------
+% ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ 
+% ------------------------------------------------------------------------------------------------------------
+
 	\section{Simulation Environment}
-		The simulated environment, which takes a known 3-D model and simulates LIDAR point cloud data that would be collected from an orbiting satellite, is generated from \cite{liu2016point}.
+		The simulated environment, which takes a known 3-D model and simulates LIDAR point cloud data that would be collected from an orbiting satellite, was generated in accordance with what was done in \cite{liu2016point}.
+
+
+	\subsection{Coordinate System and Pose Parameters}
+		Liu, et al \cite{liu2016point}, defined four reference frames, shown in Figure \ref{ReferenceFrames}. The left side shows the chaser, or small satellite $O_c$, which would be equipped with a LIDAR sensor $O_s$. The right side shows the target model $O_m$, which could be any debris of interest, and the model as detected by the LIDAR sensor, $O_t$.
 		
-	\subsection{Target Model}
-		Envisat, launched by the European Space Agency in 2002, was selected as the target model because of its large size and relatively simple shape. The satellite, which is 26 m (85 ft) × 10 m (33 ft) × 5 m (16 ft) in orbit, was decommissioned and marked as debris after it lost communication in 2012 \cite{envisat_overview}. A 3-D model was obtained from \cite{envisat_3d_model}, then converted to point cloud data.
+		The target model $O_m$ is a point cloud representation of a known 3-D model that is used to estimate the transformation from $O_s$ to $O_m$. In this transformation a point from the target model, $P_m (x_m,y_m,z_m)$ is transformed into a matching point in the sensor frame $P_s (x_s,y_s,z_s)$ through equations (\ref{eqn:T}) - (\ref{eqn:Ps}), where $\phi$ is the rotation about the X-axis, $\theta$ the rotation about the Y-axis, and $\gamma$ the rotation about the Z-axis. 
 		
-		% YVETTE - add images of refernce frames and transformations defined
-		
-		% YVETTE - add image of point cloud data and description showing the image
+		\begin{equation}
+			\label{eqn:T}
+			T = \begin{bmatrix} \Delta x  & \Delta y & \Delta z \end{bmatrix}^T
+		\end{equation}
+
+		\begin{equation}
+		 	\label{eqn:Rx}
+			R_X(\phi) = 
+			\begin{bmatrix}
+				1  & 0 & 0 \\
+				0 & cos(\phi) & sin(\phi) \\
+				0 & -sin(\phi) & cos(\phi)
+			\end{bmatrix}
+		\end{equation}
 	
-	\subsection{Simulated LIDAR Data}
+		\begin{equation}
+			\label{eqn:Ry}
+			R_Y(\theta) = 
+			\begin{bmatrix}
+				cos(\theta)  & 0 & -sin(\theta) \\
+				0 & 1 & 0 \\
+				sin(\theta) & 0 & cos(\theta)
+			\end{bmatrix}
+		\end{equation}
+	
+		\begin{equation}
+			\label{eqn:Rz}
+			R_Z(\gamma) = 
+			\begin{bmatrix}
+				cos(\gamma)  & sin(\gamma) & 0 \\
+				-sin(\gamma) & cos(\gamma) & 0 \\
+				0 & 0 & 1
+			\end{bmatrix}
+		\end{equation}
+	
+		\begin{equation}
+			\label{eqn:R}
+			R = R_Y(\theta) \times R_X(\phi) \times R_Z(\gamma)
+		\end{equation}
+	
+		\begin{equation}
+			\label{eqn:Ps}
+			P_s = RP_m + T
+		\end{equation}
+	
+	\begin{figure}[htbp]
+		\centerline{\includegraphics{Images/ReferenceFrames.PNG}}
+		\caption{Reference frames definition.}
+		\label{ReferenceFrames}
+	\end{figure}
+
+
+	\subsection{Target Model}
+		Envisat, launched by the European Space Agency in 2002, was initially selected as the target model because of its large size and relatively simple shape. The satellite, which is 26 m (85 ft) × 10 m (33 ft) × 5 m (16 ft) in orbit, was decommissioned and marked as debris after it lost communication in 2012 \cite{envisat_overview}. A 3-D model was obtained from \cite{envisat_3d_model}, then converted to point cloud data. The model was not to scale, but since the goal of the project was to implement the pose estimation algorithms, it was deemed suitable for the task. 
+	
+	
+	\subsection{Simulated LIDAR Data} 
+		The SR4000 camera from MESA Imaging was selected as the sensor from which the data is simulated. The specifications were obtained from \cite{camera_specs} and are shown in Table \ref{tab:sr4000_spec}.
+
+		\begin{table}[htbp]
+			\caption{SR4000 specifications} %title of the table
+			\centering
+		\begin{tabular}{rr} % creating 2 columns
+			\hline\hline %inserting double-line
+			Sensor pixels & 176 x 148 \\ % Entering row contents
+			Frame rate (f/s) & 54 \\
+			Field of view (degree) & 43.6 x 34.6 \\
+			Scan resolution at 3 m (mm) & 13.6 \\[1ex] % [1ex] adds vertical space
+			\hline % inserts single-line
+		\end{tabular}
+		\label{tab:sr4000_spec}
+		\end{table}
 		
 		
 	\nocite{*}
