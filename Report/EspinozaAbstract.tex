@@ -168,8 +168,8 @@
 
 	\subsection{Target Model}
 		Envisat, launched by the European Space Agency in 2002, was initially selected as the target model because of its large size and relatively simple shape. The satellite, which is 26 m (85 ft) × 10 m (33 ft) × 5 m (16 ft) in orbit, was decommissioned and marked as debris after it lost communication in 2012 \cite{envisat_overview}. A 3-D model was obtained from \cite{envisat_3d_model}, then converted to point cloud data. The model was not to scale, but since the goal of the project was to implement the pose estimation algorithms, it was deemed suitable for the task. 
-	
-	
+
+
 	\subsection{Simulated LIDAR Data} 
 		The SR4000 camera from MESA Imaging was selected as the sensor from which the data is simulated. The specifications were obtained from \cite{camera_specs} and are shown in Table \ref{tab:sr4000_spec}.
 
@@ -180,14 +180,28 @@
 			\hline\hline %inserting double-line
 			Sensor pixels & 176 x 148 \\ % Entering row contents
 			Frame rate (f/s) & 54 \\
-			Field of view (degree) & 43.6 x 34.6 \\
-			Scan resolution at 3 m (mm) & 13.6 \\[1ex] % [1ex] adds vertical space
+			Scan resolution at 3 m (mm) & 13.6 \\
+			Field of view (degree) ($\alpha_h,\alpha_v$) & 43.6 x 34.6 \\[1ex] % [1ex] adds vertical space
 			\hline % inserts single-line
 		\end{tabular}
 		\label{tab:sr4000_spec}
 		\end{table}
+
+		The first step in generating the simulated data is to take the target model point cloud and use equations (\ref{eqn:T}) - (\ref{eqn:Ps}) to get the sensor's view, based on the input rotation angles ($\phi$, $\theta$, $\gamma$), and observed position ($x,y,z$).
 		
+		To accurately simulate whether the points line in the sensors field of view the following equations are used
+
+		\begin{equation}
+			\label{eqn:field_view_eqs}
+			\begin{cases}
+				Y_{range} = \begin{bmatrix} -Dtan(\alpha_h/2), & Dtan(\alpha_h/2) \end{bmatrix} \\
+				Z_{range} = \begin{bmatrix} -Dtan(\alpha_v/2), & Dtan(\alpha_v/2) \end{bmatrix}
+			\end{cases}
+		\end{equation}
+		where $Y_{range}$ and $Z_{range}$ are the horizontal and vertical observable ranges, $D$ is the x component of $P_s$. The horizontal and vertical view angles ($\alpha_h$, $\alpha_v$) are provided in table \ref{tab:sr4000_spec}. If the calculated sensor point $P_s$ is outside of the sensor range, the point is discarded. 
+
 		
+
 	\nocite{*}
 	\printbibliography
 	
