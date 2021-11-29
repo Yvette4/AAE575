@@ -10,6 +10,7 @@
 %\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
 %		T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
+\usepackage{hyperref}
 \usepackage{biblatex} 
 \addbibresource{refs.bib}
 
@@ -72,7 +73,7 @@
 		First, the initial position vector ($T_0$) of the satellite with respect to the target, or debris to track, is computed as the centroid of the point cloud. Then the main axes ($e_m$) are estimated using the Principle Component Analysis, where the directions are given by the eigenvectors of the data's covariance matrix ($Q$). The main axes equations are shown in (\ref{eqn:estimated_axes}), while the roll ($\alpha_0$) and pitch ($\beta_0$) estimates are in (\ref{eqn:estimated_roll_pitch}).
 
 		\begin{figure}[htbp]
-			\centerline{\includegraphics{Images/3_D_PCA_based_TM_algorithm.PNG}}
+			\centerline{\includegraphics[scale=0.85]{Images/3_D_PCA_based_TM_algorithm.PNG}}
 			\caption{3-D PCA-based online TM algorithm.}
 			\label{3_D_PCA_based_TM_algorithm}
 		\end{figure}
@@ -160,14 +161,19 @@
 		\end{equation}
 	
 	\begin{figure}[htbp]
-		\centerline{\includegraphics{Images/ReferenceFrames.PNG}}
+		\centerline{\includegraphics[scale=0.95]{Images/ReferenceFrames.PNG}}
 		\caption{Reference frames definition.}
 		\label{ReferenceFrames}
 	\end{figure}
 
 
 	\subsection{Target Model}
-		Envisat, launched by the European Space Agency in 2002, was initially selected as the target model because of its large size and relatively simple shape. The satellite, which is 26 m (85 ft) × 10 m (33 ft) × 5 m (16 ft) in orbit, was decommissioned and marked as debris after it lost communication in 2012 \cite{envisat_overview}. A 3-D model was obtained from \cite{envisat_3d_model}, then converted to point cloud data. The model was not to scale, but since the goal of the project was to implement the pose estimation algorithms, it was deemed suitable for the task. 
+		Envisat, launched by the European Space Agency in 2002, was initially selected as the target model because of its large size and relatively simple shape. The satellite, which is 26 m (85 ft) × 10 m (33 ft) × 5 m (16 ft) in orbit, was decommissioned and marked as debris after it lost communication in 2012 \cite{envisat_overview}. A 3-D model was obtained from \cite{envisat_3d_model}, then converted to point cloud data. The model, shown in Figure \ref{3d_model}, was not to scale, but since the goal of the project was to implement the pose estimation algorithms, it was deemed suitable for the task. 
+		\begin{figure}[htbp]
+			\centerline{\includegraphics[scale=0.8]{Images/point_cloud_model_black_white.PNG}}
+			\caption{ENVISAT 3-D Point Cloud Model.}
+			\label{3d_model}
+		\end{figure}
 
 
 	\subsection{Simulated LIDAR Data} 
@@ -179,16 +185,17 @@
 		\begin{tabular}{rr} % creating 2 columns
 			\hline\hline %inserting double-line
 			Sensor pixels & 176 x 148 \\ % Entering row contents
-			Frame rate (f/s) & 54 \\
-			Scan resolution at 3 m (mm) & 13.6 \\
-			Field of view (degree) ($\alpha_h,\alpha_v$) & 43.6 x 34.6 \\[1ex] % [1ex] adds vertical space
+			Frame rate & 54 (f/s)\\
+			Focus Length ($f$) & 10 (mm) \\
+			Scan resolution at 3 m & 13.6 (mm)\\
+			Field of view ($\alpha_h,\alpha_v$) & 43.6 x 34.6 (degrees) \\[1ex] % [1ex] adds vertical space
 			\hline % inserts single-line
 		\end{tabular}
 		\label{tab:sr4000_spec}
 		\end{table}
 
 		The first step in generating the simulated data is to take the target model point cloud and use equations (\ref{eqn:T}) - (\ref{eqn:Ps}) to get the sensor's view, based on the input rotation angles ($\phi$, $\theta$, $\gamma$), and observed position ($x,y,z$).
-		
+
 		To accurately simulate whether the points line in the sensors field of view the following equations are used
 
 		\begin{equation}
@@ -198,9 +205,41 @@
 				Z_{range} = \begin{bmatrix} -Dtan(\alpha_v/2), & Dtan(\alpha_v/2) \end{bmatrix}
 			\end{cases}
 		\end{equation}
-		where $Y_{range}$ and $Z_{range}$ are the horizontal and vertical observable ranges, $D$ is the x component of $P_s$. The horizontal and vertical view angles ($\alpha_h$, $\alpha_v$) are provided in table \ref{tab:sr4000_spec}. If the calculated sensor point $P_s$ is outside of the sensor range, the point is discarded. 
 
+		where $Y_{range}$ and $Z_{range}$ are the horizontal and vertical observable ranges, $D$ is the x component of $P_s$. The horizontal and vertical view angles ($\alpha_h$, $\alpha_v$) are provided in Table \ref{tab:sr4000_spec}. If the calculated sensor point $P_s$ is outside of the sensor range, the point is discarded. To account for distance errors, a random value in the range [$-\Delta d, \Delta d$] was also added.
 		
+%		The last step is to take the coordinates calculated above and compute the pixel coordinates using Equations () - ().  
+	% YVETTE - come back to this step last... what is it useful for...?
+
+
+	% ------------------------------------------------------------------------------------------------------------
+	% ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ 
+	% ------------------------------------------------------------------------------------------------------------
+	\section{Results}
+		Matlab was used to take the Envisat 3-D model and convert it to a point cloud file, and Python was used to generate the simulated LIDAR data. The Liu, et al. paper (\cite{liu2016point}) was followed when generating the data, but some assumptions were made when adding the distance measurement errors. The SR4000 camera has a measurement accuracy of 1 cm, but the paper did not discuss how they added their error. The error was assumed to have a Gaussian distribution, zero mean and 1 cm standard deviation, with the error added randomly to one of the three axis.
+		
+		The code for the project can be found here: \url{https://github.com/Yvette4/AAE575}
+		
+	\subsection{Experiment 1}
+		The first simulated data was for an observed position (x,y,z) at (10, 0, 0) meters and initial rotation angles ($\phi, \theta, \gamma$) at (-180, 0, 0) degrees. The generated cloud point is shown in Figure \ref{Experiment1pc}.
+		
+		[NOTE: THE FINAL VERSION OF THE PAPER WILL ROTATE THE OBSERVABLE ANGLE $\gamma$ BY 10 DEGREES TO GENERATE MORE POINT CLOUDS AND APPLY THE EQUATIONS LISTED IN THE LITERATURE REVIEW TO GET ESTIMATED ANGLES AND POSITIONS. THESE WILL BE COMPARED WITH THE REAL ANGLE AND POSITION TO SEE HOW EFFECTIVE THE ALGORITHM IS] 
+		
+		\begin{figure}[htbp]
+			\centerline{\includegraphics[scale=1]{Images/Experiment1_10m.PNG}}
+			\caption{Generated point cloud at 10 meters view distance.}
+			\label{Experiment1pc}
+		\end{figure}
+
+	\subsection{Experiment 2}
+	The next observed position was (2, 0, 0) meters and rotation angles (-180, 0, 0) degrees. The generated cloud point is shown in Figure \ref{Experiment2pc}. Since the target was at a close range, the entire model did not fit in the sensor's field of view, which did not detect the bottom panel.
+
+	\begin{figure}[htbp]
+		\centerline{\includegraphics[scale=1]{Images/Experiment2_2m.PNG}}
+		\caption{Generated point cloud at 2 meters view distance.}
+		\label{Experiment2pc}
+	\end{figure}
+
 
 	\nocite{*}
 	\printbibliography
