@@ -16,7 +16,7 @@
 
 \begin{document}
 	
-	\title{Analysis on Debris Detection and Trajectory Predictions*}
+	\title{Analysis on Space Debris Detection and Initial Pose Estimation}
 
 	\author{\IEEEauthorblockN{1\textsuperscript{st} Yvette Espinoza}
 		\IEEEauthorblockA{\textit{Software Engineer} \\
@@ -36,9 +36,7 @@
 		Technological improvements over the past few decades have made space exploration more feasible, but the increase in space activity has also resulted in undesirable space debris that can pose a threat to the safety of space crafts. 
 		Space surveillance systems can detect and track large debris, providing space situational awareness that reduces the risk of equipment colliding with debris, but such systems often fail to properly identify smaller debris. The main challenge lies with the uncertainty regarding the debris characteristics, making it difficult to accurately predict the orbit.
 		Current detection and tracking of small debris is performed by either using ground based systems, or small satellite constellations to gather information on the debris' characteristics and generate orbit predictions.
-		This research project will first look at the differences between the two systems, focusing on why small satellite constellations are preferred when considering collision avoidance and active debris removal systems. The iterative closest point algorithm will be discussed as a possible solution to pose estimation, followed by a simulation on how to algorithm works.
-		
-		% YVETTE - review this again... mention TM and PCA ...?
+		This research project looks at the differences between ground based systems and small satellite constellations, focusing on why the constellations are preferred when considering collision avoidance and active debris removal systems. Sample data is generated from a small satellite equipt with a lidar sensor, then used with a template matching algorithm to obtain an initial pose estimate.
 
 	\end{abstract}
 
@@ -60,45 +58,49 @@
 
 	\subsection{Small Satellite Constellations}
 		In an effort to increase the accuracy of space debris orbit detection and predictions, studies were conducted to validate the concept of space based space surveillance. In 1996 the Midcourse Space Experiment satellite was launched with a Space-Based Visible (SBV) sensor, becoming the first demonstration of space-based surveillance that could be valuable to the SSN as an addition to the ground based systems \cite{stokes2000space}. In the following years more satellites, such as the SBSS Block 10 and the Sapphire, have been deployed and shown to provide a more accurate description of the environment  \cite{multi_spacecraft_2016}. 
-		Onboard sensors have an unobstructed view of debris, not affected by the weather as optical systems are, and can provide more accurate measurements when processing occurs onboard the spacecraft instead of relying on ground control centers.
-		
-		% YVETTE - more info is needed here... more advantages to using small sattelite constelations
-		
-		
-	\subsection{Pose Acquisition and Tracking}
-		One method for onboard pose determination and tracking of space debris involves using a model-based algorithm that processes 3-D point clouds collected from a LIDAR sensor \cite{2017_pose_pca}\cite{liu2016point}\cite{unscented_kalman}.
-		The first step is to obtain an initial pose, then refine the pose measurement as part of the tracking and orbit estimation. 
-		For the initial pose $p_0 = (\alpha_0, \beta_0, \gamma_0, T_0)$, \cite{2017_pose_pca} proposed a three step method to estimate the relative position vector directly from the measured point cloud, referred to as 3-D PCA-based online Template Matching.
 
-		First, the initial position vector ($T_0$) of the satellite with respect to the target, or debris to track, is computed as the centroid of the point cloud. Then the main axes ($e_m$) are estimated using the Principle Component Analysis, where the directions are given by the eigenvectors of the data's covariance matrix ($Q$). The main axes equations are shown in (\ref{eqn:estimated_axes}), while the roll ($\alpha_0$) and pitch ($\beta_0$) estimates are in (\ref{eqn:estimated_roll_pitch}).
-
+		Onboard sensors have an unobstructed view of debris, not affected by the weather as optical systems are, and can provide more accurate measurements when processing occurs onboard the spacecraft instead of relying on ground control centers. Since satellites like the SBSS Block 10 validated the benefits of space based surveillance, research has shifted to different applications, such as debris removal or avoidance systems.
+		
+		Systems that rely on constellations are generally referred to as target-chaser systems, where the target would be the object of interest, and the chaser the spacecraft equipt with different sensors. Some studies have focused on the spacecraft architecture, coordinating between the different spacecraft to track the target \cite{multi_spacecraft_2016}. Other studies focused on pose acquisition and tracking, using template matching algorithms for the initial pose \cite{2017_pose_pca}\cite{OpromollaRoberto2015Upew}, and a combination of different estimation filters for the tracking portion, such as the unscented kalman filter \cite{unscented_kalman}.
+		
+		
+	\subsection{Pose Acquisition}
 		\begin{figure}[htbp]
 			\centerline{\includegraphics[scale=0.85]{Images/3_D_PCA_based_TM_algorithm.PNG}}
-			\caption{3-D PCA-based online TM algorithm.}
+			\caption{3-D PCA-based template matching algorithm.}
 			\label{3_D_PCA_based_TM_algorithm}
 		\end{figure}
+	
+		One method for onboard pose determination of space debris involves using a template matching algorithm that processes 3-D point clouds collected from a LIDAR sensor and generates an initial pose measurement, which is later refined using state estimators part of the tracking and orbit estimation \cite{2017_pose_pca}\cite{liu2016point}\cite{unscented_kalman}.
 		
+		In \cite{2017_pose_pca} the initial pose was defined as 
+		
+		\centerline{$p_0 = (\alpha_0, \beta_0, \gamma_0, T_0)$}
+		
+		\noindent where $(\alpha_0, \beta_0, \gamma_0)$ represent the roll, pitch, yaw angles of the debris, and $T_0$ represents the $(x,y,z)$ coordinates. A three step method was proposed to estimate the relative position vector directly from measured point cloud data ($P_c$), referred to as a 3-D PCA-based online Template Matching.
+		
+		The first step is to obtain the initial position vector ($T_0$) of the target, or debris to track, with respect to the satellite. This is computed as the centroid of the point cloud, shown in equation (\ref{eqn:centroid})).
 		\begin{equation}
-			\label{eqn:estimated_axes}
-			\begin{bmatrix} e_{M_x} \\ e_{M_y} \\ e_{M_z} \end{bmatrix}
-			=
-			\begin{bmatrix}
-				cos(\beta_0)  & 0 & -sin(\beta_0) \\
-				sin(\alpha_0)sin(\beta_0) & cos(\alpha_0) & sin(\alpha_0)cos(\beta_0) \\
-				cos(\alpha_0)sin(\beta_0) & -sin(\alpha_0) & cos(\alpha_0)cos(\beta_0)
-			\end{bmatrix}
-			\begin{bmatrix} 0 \\ 0 \\ 1 \end{bmatrix}
+			\label{eqn:centroid}
+			T_0 = -\frac{1}{N} ( \sum_{i=1}^{N} x_i, \sum_{i=1}^{N} y_i, \sum_{i=1}^{N} z_i )
+		\end{equation}
+		The number of point clouds is given by $N$, with $(x_i, y_i, z_i)$ being points in $P_c$.
+		
+		After obtaining the initial position vector the main axis ($e_m$) is estimated using the Principle Component Analysis (PCA). From the covariance matrix, calculated from equation (\ref{eqn:covariance}), the main axis directions ($e_{M_x}, e_{M_y}, e_{M_z}$) are obtained from the eigenvector corresponding to the largest eigenvalue of the covariance matrix $Q$. The main axis are used to estimate the roll ($\alpha_0$) and pitch ($\beta_0$) angles, shown in (\ref{eqn:estimated_roll_pitch}).
+		\begin{equation}
+			\label{eqn:covariance}
+			Q = \frac{1}{N} \sum_{i}^{N} (P_c^{(i)} - T_0)(P_c^{(i)} - T_0)^T
 		\end{equation}
 		
 		\begin{equation}
 			\label{eqn:estimated_roll_pitch}
 			\begin{cases}
 				\alpha_0 = tan^{-1}(\frac{e_{M_x}}{e_{M_z}}) \\
-				\beta_0 = sin^{-1}(-e_Mx)
+				\beta_0 = sin^{-1}(-e_{M_x})
 			\end{cases} 
 		\end{equation}
-		
-		% YVETTE - type out the covarriance matrix along with equation for calculating the centroid!
+	
+		The final step is to estimate the yaw angle ($\gamma_0$). This step requires incrementing $\gamma$ and generating a point cloud, or template, of the debris at that angle. The above steps are repeated for each $\gamma$, with an additional step to align the newly calculated and original centroids, then use the nearest neighbor algorithm to determine the similarity between the point clouds. The value of $\gamma$ that minimizes the correlation function is set as the estimated yaw angle.
 		
 		An overview of the model from acquisition of the point cloud data to the inital pose estimation, taken from \cite{2017_pose_pca} is shown in Figure \ref{3_D_PCA_based_TM_algorithm}.
 
@@ -107,7 +109,7 @@
 % ------------------------------------------------------------------------------------------------------------
 
 	\section{Simulation Environment}
-		The simulated environment, which takes a known 3-D model and simulates LIDAR point cloud data that would be collected from an orbiting satellite, was generated in accordance with what was done in \cite{liu2016point}.
+		To apply the 3-D PCA template matching algorithm sample data needs to be generated and fed into the algorithm. The sample data was generated in accordance with what was done in \cite{liu2016point}. Their simulated environment takes in a known 3-D model and simulates LIDAR point cloud data that would be collected from an orbiting satellite.
 
 
 	\subsection{Coordinate System and Pose Parameters}
@@ -168,7 +170,10 @@
 
 
 	\subsection{Target Model}
-		Envisat, launched by the European Space Agency in 2002, was initially selected as the target model because of its large size and relatively simple shape. The satellite, which is 26 m (85 ft) × 10 m (33 ft) × 5 m (16 ft) in orbit, was decommissioned and marked as debris after it lost communication in 2012 \cite{envisat_overview}. A 3-D model was obtained from \cite{envisat_3d_model}, then converted to point cloud data. The model, shown in Figure \ref{3d_model}, was not to scale, but since the goal of the project was to implement the pose estimation algorithms, it was deemed suitable for the task. 
+		Envisat, launched by the European Space Agency in 2002, was initially selected because it appeared in various studies \cite{NocerinoAlessia2021Lmaf}\cite{unscented_kalman}\cite{2017_pose_pca}\cite{OpromollaRoberto2015Upew}. 
+		The satellite, which is 26 m (85 ft) × 10 m (33 ft) × 5 m (16 ft) in orbit, was decommissioned and marked as debris after it lost communication in 2012 \cite{envisat_overview}. Though the satellite is very large and does not provide any problems for the ground based SSN to track, its relatively simple shape allow for testing estimation algorithms designed for small satellite constellations.
+		
+		A 3-D model was obtained online from \cite{envisat_3d_model}, then converted to a point cloud data file. The point cloud data model, shown in Figure \ref{3d_model}, was not to scale, but since the goal of the project was to generate sample LIDAR data and obtain the initial pose estimate, it was deemed suitable for the task.
 		\begin{figure}[htbp]
 			\centerline{\includegraphics[scale=0.8]{Images/point_cloud_model_black_white.PNG}}
 			\caption{ENVISAT 3-D Point Cloud Model.}
@@ -176,7 +181,7 @@
 		\end{figure}
 
 
-	\subsection{Simulated LIDAR Data} 
+	\subsection{Simulated LIDAR Data}
 		The SR4000 camera from MESA Imaging was selected as the sensor from which the data is simulated. The specifications were obtained from \cite{camera_specs} and are shown in Table \ref{tab:sr4000_spec}.
 
 		\begin{table}[htbp]
@@ -194,9 +199,9 @@
 		\label{tab:sr4000_spec}
 		\end{table}
 
-		The first step in generating the simulated data is to take the target model point cloud and use equations (\ref{eqn:T}) - (\ref{eqn:Ps}) to get the sensor's view, based on the input rotation angles ($\phi$, $\theta$, $\gamma$), and observed position ($x,y,z$).
+		The first step in generating the simulated data was to take the target model point cloud and use equations (\ref{eqn:T}) - (\ref{eqn:Ps}) to get the sensor's view, based on the input rotation angles ($\phi$, $\theta$, $\gamma$), and observed position ($x,y,z$).
 
-		To accurately simulate whether the points line in the sensors field of view the following equations are used
+		To accurately simulate whether the points lie in the sensors field of view the following equations were used
 
 		\begin{equation}
 			\label{eqn:field_view_eqs}
@@ -206,33 +211,55 @@
 			\end{cases}
 		\end{equation}
 
-		where $Y_{range}$ and $Z_{range}$ are the horizontal and vertical observable ranges, $D$ is the x component of $P_s$. The horizontal and vertical view angles ($\alpha_h$, $\alpha_v$) are provided in Table \ref{tab:sr4000_spec}. If the calculated sensor point $P_s$ is outside of the sensor range, the point is discarded. To account for distance errors, a random value in the range [$-\Delta d, \Delta d$] was also added.
-		
-%		The last step is to take the coordinates calculated above and compute the pixel coordinates using Equations () - ().  
-	% YVETTE - come back to this step last... what is it useful for...?
+		\noindent where $Y_{range}$ and $Z_{range}$ are the horizontal and vertical observable ranges, $D$ is the x component of $P_s$. The horizontal and vertical view angles ($\alpha_h$, $\alpha_v$) are provided in Table \ref{tab:sr4000_spec}. If the calculated sensor point $P_s$ is outside of the sensor range, the point is discarded. To account for distance errors, a random value in the range [$-\Delta d, \Delta d$] was also added.
 
 
 	% ------------------------------------------------------------------------------------------------------------
 	% ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ 
 	% ------------------------------------------------------------------------------------------------------------
 	\section{Results}
-		Matlab was used to take the Envisat 3-D model and convert it to a point cloud file, and Python was used to generate the simulated LIDAR data. The Liu, et al. paper (\cite{liu2016point}) was followed when generating the data, but some assumptions were made when adding the distance measurement errors. The SR4000 camera has a measurement accuracy of 1 cm, but the paper did not discuss how they added their error. The error was assumed to have a Gaussian distribution, zero mean and 1 cm standard deviation, with the error added randomly to one of the three axis.
+		Matlab was used to take the Envisat 3-D model and convert it to a point cloud file, and Python was used to generate the simulated LIDAR data and obtain the initial pose estimate. The Liu, et al. paper (\cite{liu2016point}) was followed when generating the data, but some assumptions were made when adding the distance measurement errors. The SR4000 camera has a measurement accuracy of 1 cm, but the paper did not discuss how they added their error. The error was assumed to have a Gaussian distribution, zero mean and 1 cm standard deviation, with the error added randomly to one of the three axis.
 		
 		The code for the project can be found here: \url{https://github.com/Yvette4/AAE575}
 		
 	\subsection{Experiment 1}
-		The first simulated data was for an observed position (x,y,z) at (10, 0, 0) meters and initial rotation angles ($\phi, \theta, \gamma$) at (-180, 0, 0) degrees. The generated cloud point is shown in Figure \ref{Experiment1pc}.
-		
-		[NOTE: THE FINAL VERSION OF THE PAPER WILL ROTATE THE OBSERVABLE ANGLE $\gamma$ BY 10 DEGREES TO GENERATE MORE POINT CLOUDS AND APPLY THE EQUATIONS LISTED IN THE LITERATURE REVIEW TO GET ESTIMATED ANGLES AND POSITIONS. THESE WILL BE COMPARED WITH THE REAL ANGLE AND POSITION TO SEE HOW EFFECTIVE THE ALGORITHM IS] 
-		
 		\begin{figure}[htbp]
 			\centerline{\includegraphics[scale=1]{Images/Experiment1_10m.PNG}}
 			\caption{Generated point cloud at 10 meters view distance.}
 			\label{Experiment1pc}
 		\end{figure}
+		The first simulated data was for an observed position (x,y,z) at (10, 0, 0) meters and initial rotation angles ($\phi, \theta, \gamma$) at (-180, 0, 0) degrees. The generated cloud point is shown in Figure \ref{Experiment1pc}.
+		
+		The following were the initial pose estimates generated:
+		\begin{center}
+			$T_0 = (-10.012, -0.049,0.200)$
+			\[
+			\begin{cases}
+				\alpha_0 = -13.935 \\
+				\beta_0 = 88.818
+			\end{cases}
+			\]
+		\end{center}
+		
+		The estimated positions were accurate, within centimeters from the true observed position, but the roll and pitch angles were not accurate.
+	
+		Problems were encountered when estimating the yaw ($\gamma$) angle. The yaw estimate required generating templates of the point cloud data, but the process for generating the template conflicted with how the LIDAR data was being simulated. Due to time constraints the yaw estimate was omitted from the initial pose estimate.
 
 	\subsection{Experiment 2}
 	The next observed position was (2, 0, 0) meters and rotation angles (-180, 0, 0) degrees. The generated cloud point is shown in Figure \ref{Experiment2pc}. Since the target was at a close range, the entire model did not fit in the sensor's field of view, which did not detect the bottom panel.
+	
+	The following is the estimated pose:
+	\begin{center}
+		$T_0 = (-2.070, -0.066, 0.124)$
+		\[
+		\begin{cases}
+			\alpha_0 = -28.242 \\
+			\beta_0 = 86.043
+		\end{cases}
+		\]
+	\end{center}
+	
+	The estimated pose results were similar to those in experiment 1, with the position estimate within centimeters from the true position, but the roll and pitch angles were not accurate.
 
 	\begin{figure}[htbp]
 		\centerline{\includegraphics[scale=1]{Images/Experiment2_2m.PNG}}
@@ -240,6 +267,8 @@
 		\label{Experiment2pc}
 	\end{figure}
 
+	\section{Conclusion}
+		The LIDAR data was successfully simulated from the provided 3-D target model and the position vector was also successfully estimated with the 3-D PCA template matching algorithm, but the rotation angles were not correct. Due to issues with the template generation portion of the algorithm the yaw estimate was omitted from the calculated pose estimate. Errors in the initial pose estimate are expected as it is only the initial estimate, which would be refined as part of the debris tracking algorithms. 
 
 	\nocite{*}
 	\printbibliography
