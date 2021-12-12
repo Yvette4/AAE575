@@ -113,7 +113,7 @@
 
 
 	\subsection{Coordinate System and Pose Parameters}
-		Liu, et al \cite{liu2016point}, defined four reference frames, shown in Figure \ref{ReferenceFrames}. The left side shows the chaser, or small satellite $O_c$, which would be equipped with a LIDAR sensor $O_s$. The right side shows the target model $O_m$, which could be any debris of interest, and the model as detected by the LIDAR sensor, $O_t$.
+		Liu, et al \cite{liu2016point}, defines four reference frames, shown in Figure \ref{ReferenceFrames}. The left side shows the chaser, or small satellite $O_c$, which would be equipped with a LIDAR sensor $O_s$. The right side shows the target model $O_m$, which could be any debris of interest, and the model as detected by the LIDAR sensor, $O_t$.
 		
 		The target model $O_m$ is a point cloud representation of a known 3-D model that is used to estimate the transformation from $O_s$ to $O_m$. In this transformation a point from the target model, $P_m (x_m,y_m,z_m)$ is transformed into a matching point in the sensor frame $P_s (x_s,y_s,z_s)$ through equations (\ref{eqn:T}) - (\ref{eqn:Ps}), where $\phi$ is the rotation about the X-axis, $\theta$ the rotation about the Y-axis, and $\gamma$ the rotation about the Z-axis. 
 		
